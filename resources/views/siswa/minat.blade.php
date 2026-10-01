@@ -35,7 +35,7 @@
                     
                     <div class="grid grid-cols-5 gap-2 pt-1">
                         @for($s = 1; $s <= 5; $s++)
-                            <label class="cursor-pointer">
+                            <label class="relative block cursor-pointer select-none">
                                 <input 
                                     type="radio" 
                                     name="jawaban[{{ $pm->id }}]" 

@@ -61,9 +61,9 @@
 </head>
 <body class="h-full font-sans antialiased text-slate-800 bg-slate-50 flex flex-col" x-data="{ sidebarOpen: false }">
 
-    <div class="min-h-screen flex flex-col md:flex-row">
+    <div class="min-h-screen flex flex-col md:flex-row md:h-screen md:overflow-hidden bg-slate-50">
         <!-- Sidebar Navigation -->
-        <aside class="w-full md:w-64 bg-slate-900 text-white flex-shrink-0 flex flex-col justify-between shadow-xl transition-all duration-300">
+        <aside class="w-full md:w-64 md:h-full bg-slate-900 text-white flex-shrink-0 flex flex-col justify-between shadow-xl transition-all duration-300 z-40">
             <div>
                 <!-- Brand Header -->
                 <div class="p-5 flex items-center justify-between border-b border-slate-800">
@@ -157,7 +157,7 @@
         </aside>
 
         <!-- Main Content Area -->
-        <main class="flex-1 flex flex-col overflow-y-auto">
+        <main class="flex-1 flex flex-col min-w-0 md:h-full md:overflow-y-auto bg-slate-50">
             <!-- Top App Bar -->
             <header class="bg-white border-b border-slate-200 sticky top-0 z-30 px-6 py-4 flex items-center justify-between shadow-sm">
                 <div>
