@@ -50,14 +50,22 @@
 
         <!-- Matrix X, Matrix R, and Preference V Table -->
         <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-6 space-y-4">
-            <h3 class="font-outfit text-lg font-bold text-slate-800">Tabel Lengkap Perhitungan SAW (Alternatif Jurusan Peminatan {{ $siswa->peminatan->kode ?? 'Siswa' }})</h3>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-outfit text-lg font-bold text-slate-800">Tabel Lengkap Perhitungan SAW (Seluruh Jurusan - Linier & Lintas Minat)</h3>
+                    <p class="text-xs text-slate-500">Evaluasi komprehensif seluruh jurusan di sekolah untuk penelusuran potensi siswa secara objektif.</p>
+                </div>
+                <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">
+                    Total {{ count($kalkulasi['hasil']) }} Alternatif
+                </span>
+            </div>
             
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs border-collapse">
                     <thead>
                         <tr class="bg-slate-900 text-white font-bold">
                             <th class="p-3" rowspan="2">Rank</th>
-                            <th class="p-3" rowspan="2">Jurusan (Alternatif)</th>
+                            <th class="p-3" rowspan="2">Jurusan (Alternatif) & Jalur</th>
                             <th class="p-3 text-center" colspan="3">Matriks Keputusan (X)</th>
                             <th class="p-3 text-center" colspan="3">Matriks Normalisasi (R)</th>
                             <th class="p-3 text-center" rowspan="2">Nilai Preferensi (V)</th>
@@ -87,8 +95,19 @@
                                 </td>
 
                                 <td class="p-3">
-                                    <span class="font-bold text-slate-800 block text-xs">{{ $h['jurusan']['nama'] }}</span>
-                                    <span class="text-[10px] text-slate-400">{{ $h['jurusan']['rumpun']['nama'] ?? '' }}</span>
+                                    <div class="flex items-center space-x-1.5">
+                                        <span class="font-bold text-slate-800 text-xs">{{ $h['jurusan']['nama'] }}</span>
+                                        @if($h['is_linier'] ?? false)
+                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                Linier
+                                            </span>
+                                        @else
+                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-100 text-purple-800 border border-purple-200">
+                                                Lintas ({{ $h['jurusan']['rumpun']['peminatan']['kode'] ?? 'Lintas' }})
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <span class="text-[10px] text-slate-400 block mt-0.5">{{ $h['jurusan']['rumpun']['nama'] ?? '' }}</span>
                                 </td>
 
                                 <td class="p-3 text-center font-mono text-slate-700">{{ $h['skor_rapor'] }}</td>

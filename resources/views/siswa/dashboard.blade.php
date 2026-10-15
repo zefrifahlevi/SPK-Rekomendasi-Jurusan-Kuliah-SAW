@@ -98,8 +98,13 @@
         <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="font-outfit text-lg font-bold text-slate-800">Top Rekomendasi Jurusan Kuliah Anda</h3>
-                    <p class="text-xs text-slate-500">Hasil dari metode Simple Additive Weighting (SAW)</p>
+                    <div class="flex items-center space-x-2">
+                        <h3 class="font-outfit text-lg font-bold text-slate-800">Top Rekomendasi Jurusan Kuliah Anda</h3>
+                        <span class="px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 text-[10px] font-bold border border-sky-200">
+                            Terbuka Semua Jurusan
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500">Evaluasi komprehensif jalur Linier dan Lintas Minat berbasis SAW</p>
                 </div>
                 <a href="{{ route('siswa.hasil') }}" class="text-xs font-bold text-sky-600 hover:underline">Detail Transparansi <i class="fa-solid fa-arrow-right ml-1"></i></a>
             </div>
@@ -111,14 +116,31 @@
                             <span class="w-7 h-7 rounded-full font-bold text-xs text-white flex items-center justify-center {{ $h->ranking == 1 ? 'bg-amber-500 shadow-md' : ($h->ranking == 2 ? 'bg-slate-400' : 'bg-amber-700') }}">
                                 {{ $h->ranking }}
                             </span>
-                            <span class="font-mono font-extrabold text-xs text-sky-700 bg-sky-100 px-2 py-0.5 rounded-md">
-                                Skor V: {{ $h->nilai_v }}
-                            </span>
+
+                            <div class="flex items-center space-x-1.5">
+                                @if($h->is_linier)
+                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                        <i class="fa-solid fa-check mr-0.5"></i> Linier
+                                    </span>
+                                @else
+                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200">
+                                        <i class="fa-solid fa-compass mr-0.5"></i> Lintas Minat ({{ $h->jurusan->rumpun->peminatan->kode ?? 'Lintas' }})
+                                    </span>
+                                @endif
+                                <span class="font-mono font-extrabold text-xs text-sky-700 bg-sky-100 px-2 py-0.5 rounded-md">
+                                    V: {{ $h->nilai_v }}
+                                </span>
+                            </div>
                         </div>
 
                         <div>
                             <h4 class="font-outfit font-bold text-slate-800 text-base leading-tight">{{ $h->jurusan->nama }}</h4>
-                            <p class="text-xs font-medium text-slate-500 mt-0.5">{{ $h->jurusan->rumpun->nama ?? '' }}</p>
+                            <p class="text-xs font-medium text-slate-500 mt-0.5">
+                                {{ $h->jurusan->rumpun->nama ?? '' }}
+                                @if($h->jurusan->rumpun && $h->jurusan->rumpun->peminatan)
+                                    • <span class="text-slate-600 font-semibold">{{ $h->jurusan->rumpun->peminatan->kode }}</span>
+                                @endif
+                            </p>
                         </div>
 
                         <p class="text-[11px] text-slate-600 line-clamp-2">{{ $h->jurusan->deskripsi }}</p>

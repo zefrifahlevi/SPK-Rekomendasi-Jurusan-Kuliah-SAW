@@ -31,7 +31,7 @@ class SiswaController extends Controller
         $sudahAdaNilaiRapor = $siswa->nilaiRapor()->exists();
 
         // Top 3 Recommended Majors if SAW calculated
-        $topHasil = HasilSaw::with(['jurusan.rumpun', 'jurusan.kecerdasanUtama'])
+        $topHasil = HasilSaw::with(['jurusan.rumpun.peminatan', 'jurusan.kecerdasanUtama'])
             ->where('siswa_id', $siswa->id)
             ->orderBy('ranking', 'asc')
             ->take(3)

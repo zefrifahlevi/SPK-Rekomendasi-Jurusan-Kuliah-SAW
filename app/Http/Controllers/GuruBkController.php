@@ -34,7 +34,7 @@ class GuruBkController extends Controller
         $totalPertanyaanMinat = PertanyaanMinat::count();
         $peminatanList = Peminatan::withCount('siswa')->get();
 
-        $siswaCalculated = HasilSaw::select('siswa_id')->distinct()->count();
+        $siswaCalculated = HasilSaw::distinct('siswa_id')->count('siswa_id');
 
         // Top recommended major distribution
         $topMajors = HasilSaw::with('jurusan')
@@ -339,7 +339,7 @@ class GuruBkController extends Controller
     {
         $siswaList = User::where('role', 'siswa')
             ->with(['peminatan', 'hasilSaw' => function ($q) {
-                $q->orderBy('ranking', 'asc');
+                $q->with('jurusan.rumpun.peminatan')->orderBy('ranking', 'asc');
             }])
             ->get();
 

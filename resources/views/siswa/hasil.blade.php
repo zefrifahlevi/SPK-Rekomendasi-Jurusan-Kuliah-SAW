@@ -14,12 +14,30 @@
         <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-sky-950 p-8 rounded-3xl text-white shadow-2xl relative overflow-hidden">
             <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div class="space-y-3">
-                    <span class="inline-flex items-center space-x-2 px-3 py-1 bg-amber-500/20 border border-amber-400/40 rounded-full text-xs font-bold text-amber-300">
-                        <i class="fa-solid fa-crown text-amber-400"></i>
-                        <span>REKOMENDASI UTAMA TERATAS (RANK #1)</span>
-                    </span>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="inline-flex items-center space-x-2 px-3 py-1 bg-amber-500/20 border border-amber-400/40 rounded-full text-xs font-bold text-amber-300">
+                            <i class="fa-solid fa-crown text-amber-400"></i>
+                            <span>REKOMENDASI UTAMA TERATAS (RANK #1)</span>
+                        </span>
+                        @if($top1['is_linier'] ?? false)
+                            <span class="inline-flex items-center space-x-1.5 px-3 py-1 bg-emerald-500/20 border border-emerald-400/40 rounded-full text-xs font-bold text-emerald-300">
+                                <i class="fa-solid fa-check-circle"></i>
+                                <span>Jalur Linier Peminatan ({{ $siswa->peminatan->kode ?? 'Asal' }})</span>
+                            </span>
+                        @else
+                            <span class="inline-flex items-center space-x-1.5 px-3 py-1 bg-purple-500/25 border border-purple-400/50 rounded-full text-xs font-bold text-purple-200">
+                                <i class="fa-solid fa-compass"></i>
+                                <span>Jalur Lintas Minat ({{ $top1['jurusan']['rumpun']['peminatan']['kode'] ?? 'Luar' }})</span>
+                            </span>
+                        @endif
+                    </div>
                     <h2 class="font-outfit text-3xl sm:text-4xl font-extrabold tracking-tight text-white">{{ $top1['jurusan']['nama'] }}</h2>
-                    <p class="text-sky-300 font-semibold text-sm">{{ $top1['jurusan']['rumpun']['nama'] ?? 'Rumpun Keahlian' }} • Peminatan {{ $siswa->peminatan->kode ?? 'SMAN 11' }}</p>
+                    <p class="text-sky-300 font-semibold text-sm">
+                        {{ $top1['jurusan']['rumpun']['nama'] ?? 'Rumpun Keahlian' }}
+                        @if(isset($top1['jurusan']['rumpun']['peminatan']))
+                            • Peminatan Asal Jurusan: <span class="text-white font-bold">{{ $top1['jurusan']['rumpun']['peminatan']['nama'] }} ({{ $top1['jurusan']['rumpun']['peminatan']['kode'] }})</span>
+                        @endif
+                    </p>
                     <p class="text-slate-300 text-xs max-w-2xl leading-relaxed">{{ $top1['jurusan']['deskripsi'] }}</p>
 
                     <div class="pt-2 flex flex-wrap gap-2 text-xs">
@@ -58,11 +76,18 @@
 
             <!-- Full Ranking List -->
             <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-                <h3 class="font-outfit text-lg font-bold text-slate-800 flex items-center space-x-2">
-                    <i class="fa-solid fa-list-ol text-sky-600"></i>
-                    <span>Daftar Perangkingan Jurusan SAW</span>
-                </h3>
-                <p class="text-xs text-slate-500">Perhitungan urutan jurusan dalam Peminatan {{ $siswa->peminatan->kode ?? 'F' }}.</p>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="font-outfit text-lg font-bold text-slate-800 flex items-center space-x-2">
+                            <i class="fa-solid fa-list-ol text-sky-600"></i>
+                            <span>Daftar Perangkingan Jurusan SAW</span>
+                        </h3>
+                        <p class="text-xs text-slate-500">Hasil perangkingan komprehensif seluruh jurusan (Linier & Lintas Minat).</p>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold">
+                        {{ count($kalkulasi['hasil']) }} Jurusan
+                    </span>
+                </div>
 
                 <div class="space-y-3 max-h-[320px] overflow-y-auto pr-1">
                     @foreach($kalkulasi['hasil'] as $h)
@@ -72,8 +97,15 @@
                                     #{{ $h['ranking'] }}
                                 </span>
                                 <div>
-                                    <h4 class="font-bold text-xs text-slate-800 leading-tight">{{ $h['jurusan']['nama'] }}</h4>
-                                    <p class="text-[10px] text-slate-500">{{ $h['jurusan']['rumpun']['nama'] ?? '' }}</p>
+                                    <div class="flex items-center space-x-1.5">
+                                        <h4 class="font-bold text-xs text-slate-800 leading-tight">{{ $h['jurusan']['nama'] }}</h4>
+                                        @if($h['is_linier'] ?? false)
+                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Linier</span>
+                                        @else
+                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-100 text-purple-800 border border-purple-200">Lintas ({{ $h['jurusan']['rumpun']['peminatan']['kode'] ?? 'Lintas' }})</span>
+                                        @endif
+                                    </div>
+                                    <p class="text-[10px] text-slate-500 mt-0.5">{{ $h['jurusan']['rumpun']['nama'] ?? '' }}</p>
                                 </div>
                             </div>
 
@@ -118,7 +150,8 @@
                     <table class="w-full text-left text-xs border-collapse">
                         <thead>
                             <tr class="bg-slate-800 text-white font-bold">
-                                <th class="p-3">Jurusan</th>
+                                <th class="p-3">Rank</th>
+                                <th class="p-3">Jurusan & Jalur</th>
                                 <th class="p-3 text-center">X1 (Rapor)</th>
                                 <th class="p-3 text-center">X2 (Kecerdasan)</th>
                                 <th class="p-3 text-center">X3 (Minat)</th>
@@ -131,7 +164,18 @@
                         <tbody class="divide-y divide-slate-100">
                             @foreach($kalkulasi['hasil'] as $h)
                                 <tr class="hover:bg-slate-50">
-                                    <td class="p-3 font-semibold text-slate-800">{{ $h['jurusan']['nama'] }}</td>
+                                    <td class="p-3 font-mono font-bold text-slate-500">#{{ $h['ranking'] }}</td>
+                                    <td class="p-3">
+                                        <span class="font-semibold text-slate-800 block">{{ $h['jurusan']['nama'] }}</span>
+                                        <span class="text-[10px] text-slate-400">
+                                            {{ $h['jurusan']['rumpun']['nama'] ?? '' }}
+                                            @if($h['is_linier'] ?? false)
+                                                • <span class="text-emerald-700 font-bold">Linier ({{ $h['jurusan']['rumpun']['peminatan']['kode'] ?? '' }})</span>
+                                            @else
+                                                • <span class="text-purple-700 font-bold">Lintas Minat ({{ $h['jurusan']['rumpun']['peminatan']['kode'] ?? '' }})</span>
+                                            @endif
+                                        </span>
+                                    </td>
                                     <td class="p-3 text-center font-mono">{{ $h['skor_rapor'] }}</td>
                                     <td class="p-3 text-center font-mono">{{ $h['skor_kecerdasan'] }}</td>
                                     <td class="p-3 text-center font-mono">{{ $h['skor_minat'] }}</td>

@@ -62,9 +62,20 @@
 
                             <td class="p-4 text-center">
                                 @if($r1)
-                                    <span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 font-bold text-xs border border-emerald-300 shadow-sm">
-                                        🥇 {{ $r1->jurusan->nama ?? 'N/A' }}
-                                    </span>
+                                    <div class="inline-flex flex-col items-center space-y-1">
+                                        <span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 font-bold text-xs border border-emerald-300 shadow-sm">
+                                            🥇 {{ $r1->jurusan->nama ?? 'N/A' }}
+                                        </span>
+                                        @if($r1->is_linier)
+                                            <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                Linier ({{ $r1->jurusan->rumpun->peminatan->kode ?? '' }})
+                                            </span>
+                                        @else
+                                            <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                                                Lintas Minat ({{ $r1->jurusan->rumpun->peminatan->kode ?? '' }})
+                                            </span>
+                                        @endif
+                                    </div>
                                 @else
                                     <span class="text-slate-400 italic text-xs">-</span>
                                 @endif
@@ -82,9 +93,16 @@
 
                             <td class="p-4 text-center">
                                 @if($r2)
-                                    <span class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-semibold text-[11px]">
-                                        🥈 {{ $r2->jurusan->nama ?? 'N/A' }} ({{ $r2->nilai_v }})
-                                    </span>
+                                    <div class="inline-flex flex-col items-center space-y-0.5">
+                                        <span class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-semibold text-[11px]">
+                                            🥈 {{ $r2->jurusan->nama ?? 'N/A' }} ({{ $r2->nilai_v }})
+                                        </span>
+                                        @if($r2->is_linier)
+                                            <span class="text-[9px] text-emerald-600 font-semibold">Linier</span>
+                                        @else
+                                            <span class="text-[9px] text-purple-600 font-bold">Lintas ({{ $r2->jurusan->rumpun->peminatan->kode ?? '' }})</span>
+                                        @endif
+                                    </div>
                                 @else
                                     <span class="text-slate-400">-</span>
                                 @endif
@@ -92,9 +110,16 @@
 
                             <td class="p-4 text-center">
                                 @if($r3)
-                                    <span class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-semibold text-[11px]">
-                                        🥉 {{ $r3->jurusan->nama ?? 'N/A' }} ({{ $r3->nilai_v }})
-                                    </span>
+                                    <div class="inline-flex flex-col items-center space-y-0.5">
+                                        <span class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-semibold text-[11px]">
+                                            🥉 {{ $r3->jurusan->nama ?? 'N/A' }} ({{ $r3->nilai_v }})
+                                        </span>
+                                        @if($r3->is_linier)
+                                            <span class="text-[9px] text-emerald-600 font-semibold">Linier</span>
+                                        @else
+                                            <span class="text-[9px] text-purple-600 font-bold">Lintas ({{ $r3->jurusan->rumpun->peminatan->kode ?? '' }})</span>
+                                        @endif
+                                    </div>
                                 @else
                                     <span class="text-slate-400">-</span>
                                 @endif

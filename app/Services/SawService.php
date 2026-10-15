@@ -33,22 +33,8 @@ class SawService
         $wKecerdasan = (float) ($kriteriaList->firstWhere('kode', 'C2')->bobot ?? 0.30);
         $wMinat = (float) ($kriteriaList->firstWhere('kode', 'C3')->bobot ?? 0.30);
 
-        // 2. Fetch candidate majors suitable for student's Peminatan
-        $peminatanId = $siswa->peminatan_id;
-        $jurusanQuery = Jurusan::with(['rumpun', 'kecerdasanUtama', 'mapelUtama']);
-
-        if ($peminatanId) {
-            $jurusanQuery->whereHas('rumpun', function ($q) use ($peminatanId) {
-                $q->where('peminatan_id', $peminatanId);
-            });
-        }
-
-        $candidateMajors = $jurusanQuery->get();
-
-        if ($candidateMajors->isEmpty()) {
-            // Fallback to all majors if no peminatan set
-            $candidateMajors = Jurusan::with(['rumpun', 'kecerdasanUtama', 'mapelUtama'])->get();
-        }
+        // 2. Fetch all candidate majors (Opsi A: Membuka seluruh jurusan lintas peminatan)
+        $candidateMajors = Jurusan::with(['rumpun.peminatan', 'kecerdasanUtama', 'mapelUtama'])->get();
 
         if ($candidateMajors->isEmpty()) {
             return ['status' => 'error', 'message' => 'Tidak ada data jurusan yang tersedia.'];
@@ -88,7 +74,7 @@ class SawService
         $skorMinatPerKategoriTarget = [];
         foreach ($jawabanMinat as $jm) {
             if ($jm->pertanyaan) {
-                $target = $jm->pertanyaan->kategori_target;
+                $target = trim($jm->pertanyaan->kategori_target);
                 if (!isset($skorMinatPerKategoriTarget[$target])) {
                     $skorMinatPerKategoriTarget[$target] = [];
                 }
@@ -101,12 +87,32 @@ class SawService
             $avgMinatPerTarget[$target] = ($avg / 5.0) * 100;
         }
 
+        // Pemetaan nama rumpun jurusan ke kategori target kuesioner minat bakat
+        $rumpunToTargetMap = [
+            'Rumpun Ekonomi & Bisnis' => 'Ekonomi & Bisnis',
+            'Rumpun Sosial & Humaniora' => 'Sosial & Humaniora',
+            'Rumpun Terapan' => 'Ekonomi & Bisnis',
+            'Kesehatan & Ilmu Hayati' => 'Kesehatan & Ilmu Hayati',
+            'Sains, Teknik & Hitungan' => 'Sains & Teknik',
+            'Kesehatan' => 'Kesehatan & Ilmu Hayati',
+            'Bahasa' => 'Bahasa & Sastra',
+            'Sains dan Teknologi' => 'Sains & Teknik',
+            'Teknik & Rekayasa' => 'Sains & Teknik',
+            'Komputasi & Sistem' => 'Komputasi & Sistem',
+            'Geografi & Pemetaan' => 'Geografi & Pemetaan',
+            'Sosial & Humaniora (F5)' => 'Sosial & Humaniora',
+            'Ekonomi & Terapan (F5)' => 'Ekonomi & Bisnis',
+        ];
+
         // 4. Build Decision Matrix (X)
         // Row: Major (Alternative), Col: Criteria C1, C2, C3
         $matrixX = [];
         foreach ($candidateMajors as $j) {
             // C1: Nilai Rapor
-            // If major has mapelUtama, give 60% weight to mapelUtama score and 40% to overall avg
+            // Jika jurusan memiliki mapel utama dan siswa mengambil mapel tersebut:
+            // Bobot: 60% mapel utama + 40% rata-rata rapor keseluruhan.
+            // Jika lintas jurusan (siswa tidak memiliki nilai mapel pilihan prodi tersebut),
+            // gunakan rata-rata rapor keseluruhan (sesuai regulasi SNBP Kemendikbudristek).
             if ($j->mapel_utama_id && isset($avgByMapel[$j->mapel_utama_id])) {
                 $scoreMapel = $avgByMapel[$j->mapel_utama_id];
                 $c1 = (0.60 * $scoreMapel) + (0.40 * $avgRaporUtama);
@@ -118,24 +124,52 @@ class SawService
             if ($j->kategori_kecerdasan_utama_id && isset($skorKecerdasanPerKategori[$j->kategori_kecerdasan_utama_id])) {
                 $c2 = $skorKecerdasanPerKategori[$j->kategori_kecerdasan_utama_id];
             } else {
-                $c2 = array_sum($skorKecerdasanPerKategori) / (count($skorKecerdasanPerKategori) ?: 1);
+                $c2 = !empty($skorKecerdasanPerKategori) ? (array_sum($skorKecerdasanPerKategori) / count($skorKecerdasanPerKategori)) : 60.0;
             }
 
             // C3: Minat Bakat
-            $rumpunNama = $j->rumpun ? $j->rumpun->nama : '';
-            $matchedMinat = 70.0; // default baseline
-            foreach ($avgMinatPerTarget as $targetName => $val) {
-                if (stripos($rumpunNama, $targetName) !== false || stripos($targetName, $j->nama) !== false) {
-                    $matchedMinat = max($matchedMinat, $val);
+            $rumpunNama = $j->rumpun ? trim($j->rumpun->nama) : '';
+            $matchedMinat = null;
+
+            // 1. Cek dari mapping eksplisit rumpun ke target minat
+            if (isset($rumpunToTargetMap[$rumpunNama]) && isset($avgMinatPerTarget[$rumpunToTargetMap[$rumpunNama]])) {
+                $matchedMinat = $avgMinatPerTarget[$rumpunToTargetMap[$rumpunNama]];
+            }
+
+            // 2. Jika belum cocok, cari berdasarkan kesamaan kata/frasa
+            if ($matchedMinat === null) {
+                foreach ($avgMinatPerTarget as $targetName => $val) {
+                    $cleanTarget = strtolower(preg_replace('/[^a-zA-Z]/', '', $targetName));
+                    $cleanRumpun = strtolower(preg_replace('/[^a-zA-Z]/', '', $rumpunNama));
+                    $cleanJurusan = strtolower(preg_replace('/[^a-zA-Z]/', '', $j->nama));
+
+                    if (
+                        str_contains($cleanRumpun, $cleanTarget) ||
+                        str_contains($cleanTarget, $cleanRumpun) ||
+                        str_contains($cleanTarget, $cleanJurusan) ||
+                        str_contains($cleanJurusan, $cleanTarget)
+                    ) {
+                        $matchedMinat = max($matchedMinat ?? 0, $val);
+                    }
                 }
             }
+
+            // 3. Fallback jika tidak ada kesesuaian: rata-rata minat atau baseline 60.0
+            if ($matchedMinat === null) {
+                $matchedMinat = !empty($avgMinatPerTarget) ? (array_sum($avgMinatPerTarget) / count($avgMinatPerTarget)) : 60.0;
+            }
+
             $c3 = $matchedMinat;
+
+            // Tentukan status linieritas peminatan
+            $isLinier = $siswa->peminatan_id && $j->rumpun && ($j->rumpun->peminatan_id == $siswa->peminatan_id);
 
             $matrixX[$j->id] = [
                 'jurusan' => $j,
                 'c1' => round($c1, 4),
                 'c2' => round($c2, 4),
                 'c3' => round($c3, 4),
+                'is_linier' => $isLinier,
             ];
         }
 
@@ -173,6 +207,7 @@ class SawService
                 'r2' => $r2,
                 'r3' => $r3,
                 'nilai_v' => $v,
+                'is_linier' => $data['is_linier'],
             ];
         }
 
@@ -212,6 +247,9 @@ class SawService
                     'w2' => $wKecerdasan,
                     'w3' => $wMinat,
                     'nilai_v' => $item['nilai_v'],
+                    'is_linier' => $item['is_linier'],
+                    'peminatan_asal' => $siswa->peminatan->kode ?? null,
+                    'peminatan_jurusan' => $item['jurusan']->rumpun->peminatan->kode ?? null,
                 ],
             ]);
         }
