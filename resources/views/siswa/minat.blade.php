@@ -12,13 +12,30 @@
             <span>Instruksi Pengisian Tes Minat Bakat</span>
         </h3>
         <p class="text-xs text-slate-600 leading-relaxed">
-            Berikan nilai minat Anda terhadap rumpun keahlian jurusan kuliah berikut dari skala 1 (Sangat Tidak Berminat) hingga 5 (Sangat Berminat):
+            Berikan nilai minat Anda terhadap rumpun keahlian jurusan kuliah berikut:
         </p>
+        <div class="flex flex-wrap gap-2 pt-2 text-[11px] font-semibold text-slate-700">
+            <span class="px-2.5 py-1 bg-slate-100 rounded-lg">Sangat Tidak Berminat</span>
+            <span class="px-2.5 py-1 bg-slate-100 rounded-lg">Tidak Berminat</span>
+            <span class="px-2.5 py-1 bg-slate-100 rounded-lg">Cukup Berminat</span>
+            <span class="px-2.5 py-1 bg-slate-100 rounded-lg">Berminat</span>
+            <span class="px-2.5 py-1 bg-rose-100 text-rose-800 rounded-lg">Sangat Berminat</span>
+        </div>
     </div>
 
     <!-- Questionnaire Form -->
     <form action="{{ route('siswa.minat.store') }}" method="POST" class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-6">
         @csrf
+
+        @php
+            $skalaMinat = [
+                1 => 'Sangat Tidak Berminat',
+                2 => 'Tidak Berminat',
+                3 => 'Cukup Berminat',
+                4 => 'Berminat',
+                5 => 'Sangat Berminat',
+            ];
+        @endphp
 
         <div class="space-y-4">
             @foreach($pertanyaanList as $index => $pm)
@@ -33,8 +50,8 @@
                     </div>
                     <p class="text-xs font-semibold text-slate-800 leading-relaxed">{{ $pm->pertanyaan }}</p>
                     
-                    <div class="grid grid-cols-5 gap-2 pt-1">
-                        @for($s = 1; $s <= 5; $s++)
+                    <div class="grid grid-cols-5 gap-1.5 sm:gap-2 pt-1">
+                        @foreach($skalaMinat as $s => $labelDeskripsi)
                             <label class="relative block cursor-pointer select-none">
                                 <input 
                                     type="radio" 
@@ -42,11 +59,11 @@
                                     value="{{ $s }}" 
                                     {{ $val == $s ? 'checked' : '' }} 
                                     class="peer sr-only">
-                                <div class="py-2 text-center text-xs font-bold rounded-xl border border-slate-300 bg-white text-slate-700 peer-checked:bg-rose-600 peer-checked:text-white peer-checked:border-rose-600 peer-checked:shadow-md transition">
-                                    Skor {{ $s }}
+                                <div class="py-2.5 px-1 sm:px-2 text-center text-[10px] sm:text-xs font-bold rounded-xl border border-slate-300 bg-white text-slate-700 peer-checked:bg-rose-600 peer-checked:text-white peer-checked:border-rose-600 peer-checked:shadow-md transition flex items-center justify-center min-h-[46px] sm:min-h-[50px] leading-tight">
+                                    {{ $labelDeskripsi }}
                                 </div>
                             </label>
-                        @endfor
+                        @endforeach
                     </div>
                 </div>
             @endforeach

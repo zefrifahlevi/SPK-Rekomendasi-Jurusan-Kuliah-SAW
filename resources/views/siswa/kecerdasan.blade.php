@@ -12,20 +12,30 @@
             <span>Instruksi Pengisian Tes Kecerdasan Majemuk</span>
         </h3>
         <p class="text-xs text-slate-600 leading-relaxed">
-            Pilihlah skala penilaian 1 sampai 5 yang paling sesuai dengan gambaran diri Anda sesungguhnya:
+            Pilihlah skala penilaian yang paling sesuai dengan gambaran diri Anda sesungguhnya:
         </p>
-        <div class="flex flex-wrap gap-3 pt-2 text-[11px] font-semibold text-slate-700">
-            <span class="px-2.5 py-1 bg-slate-100 rounded-lg">1 = Sangat Tidak Sesuai</span>
-            <span class="px-2.5 py-1 bg-slate-100 rounded-lg">2 = Tidak Sesuai</span>
-            <span class="px-2.5 py-1 bg-slate-100 rounded-lg">3 = Ragu-Ragu / Cukup</span>
-            <span class="px-2.5 py-1 bg-slate-100 rounded-lg">4 = Sesuai</span>
-            <span class="px-2.5 py-1 bg-sky-100 text-sky-800 rounded-lg">5 = Sangat Sesuai</span>
+        <div class="flex flex-wrap gap-2 pt-2 text-[11px] font-semibold text-slate-700">
+            <span class="px-2.5 py-1 bg-slate-100 rounded-lg">Sangat Tidak Sesuai</span>
+            <span class="px-2.5 py-1 bg-slate-100 rounded-lg">Tidak Sesuai</span>
+            <span class="px-2.5 py-1 bg-slate-100 rounded-lg">Ragu-Ragu / Cukup</span>
+            <span class="px-2.5 py-1 bg-slate-100 rounded-lg">Sesuai</span>
+            <span class="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-lg">Sangat Sesuai</span>
         </div>
     </div>
 
     <!-- Questionnaire Form -->
     <form action="{{ route('siswa.kecerdasan.store') }}" method="POST" class="space-y-6">
         @csrf
+
+        @php
+            $skalaKecerdasan = [
+                1 => 'Sangat Tidak Sesuai',
+                2 => 'Tidak Sesuai',
+                3 => 'Ragu-Ragu / Cukup',
+                4 => 'Sesuai',
+                5 => 'Sangat Sesuai',
+            ];
+        @endphp
 
         @foreach($kategoriList as $kat)
             <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4">
@@ -47,8 +57,8 @@
                         <div class="p-4 rounded-2xl bg-slate-50/80 border border-slate-100 space-y-3">
                             <p class="text-xs font-semibold text-slate-800 leading-relaxed">{{ $pk->pertanyaan }}</p>
                             
-                            <div class="grid grid-cols-5 gap-2">
-                                @for($s = 1; $s <= 5; $s++)
+                            <div class="grid grid-cols-5 gap-1.5 sm:gap-2">
+                                @foreach($skalaKecerdasan as $s => $labelDeskripsi)
                                     <label class="relative block cursor-pointer select-none">
                                         <input 
                                             type="radio" 
@@ -56,11 +66,11 @@
                                             value="{{ $s }}" 
                                             {{ $val == $s ? 'checked' : '' }} 
                                             class="peer sr-only">
-                                        <div class="py-2 text-center text-xs font-bold rounded-xl border border-slate-300 bg-white text-slate-700 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-600 peer-checked:shadow-md transition">
-                                            Skor {{ $s }}
+                                        <div class="py-2.5 px-1 sm:px-2 text-center text-[10px] sm:text-xs font-bold rounded-xl border border-slate-300 bg-white text-slate-700 peer-checked:bg-purple-600 peer-checked:text-white peer-checked:border-purple-600 peer-checked:shadow-md transition flex items-center justify-center min-h-[46px] sm:min-h-[50px] leading-tight">
+                                            {{ $labelDeskripsi }}
                                         </div>
                                     </label>
-                                @endfor
+                                @endforeach
                             </div>
                         </div>
                     @endforeach
